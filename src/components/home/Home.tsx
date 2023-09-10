@@ -1,64 +1,85 @@
 import DragDrop, { DragDropPropsType } from "../DragDrop/DragDrop";
 import '../../App.css'
 import { useState } from "react";
+import { Table, Space, Tag } from "antd";
+import TableExpand from "../TableExpand";
 export default function Home() {
-  const [data, setData] = useState<DragDropPropsType['value']>([
+  const columns = [
     {
-      label: '流感病毒快速检测(甲+乙)',
-      value: 1
+      title: 'Name',
+      dataIndex: 'name',
+      key: 'name',
+      render: (text) => <a>{text}</a>,
     },
     {
-      label: '血常规自动分析(五分类)',
-      value: 2
+      title: 'Age',
+      dataIndex: 'age',
+      key: 'age',
     },
     {
-      label: '快速超敏C反应蛋白测定',
-      value: 3
+      title: 'Address',
+      dataIndex: 'address',
+      key: 'address',
     },
     {
-      label: '外周血细胞形态分析',
-      value: 4
+      title: 'Tags',
+      key: 'tags',
+      dataIndex: 'tags',
+      render: (_, { tags }) => (
+        <>
+          {tags.map((tag) => {
+            let color = tag.length > 5 ? 'geekblue' : 'green';
+            if (tag === 'loser') {
+              color = 'volcano';
+            }
+            return (
+              <Tag color={color} key={tag}>
+                {tag.toUpperCase()}
+              </Tag>
+            );
+          })}
+        </>
+      ),
     },
     {
-      label: '尿液分析+尿沉渣定量',
-      value: 5
+      title: 'Action',
+      key: 'action',
+      render: (_, record) => (
+        <Space size="middle">
+          <a>Invite {record.name}</a>
+          <a>Delete</a>
+        </Space>
+      ),
+    },
+  ];
+  const data = [
+    {
+      key: '1',
+      name: 'John Brown',
+      age: 32,
+      address: 'New York No. 1 Lake Park',
+      tags: ['nice', 'developer'],
     },
     {
-      label: '尿液分析（急诊）',
-      value: 6
+      key: '2',
+      name: 'Jim Green',
+      age: 42,
+      address: 'London No. 1 Lake Park',
+      tags: ['loser'],
     },
     {
-      label: '大便常规(仪器法)',
-      value: 7
+      key: '3',
+      name: 'Joe Black',
+      age: 32,
+      address: 'Sydney No. 1 Lake Park',
+      tags: ['cool', 'teacher'],
     },
-    {
-      label: '大便隐血试验',
-      value: 8
-    },
-    {
-      label: '论状病毒检测',
-      value: 9
-    },
-  ])
-  // const {
-  //   restrictToFirstScrollableAncestor
-  // } = ModifiersType
+  ];
   return (
     <div className="home-box">
-      <DragDrop
-        value={data}
-        columns={{
-          amount: 2,
-        }}
-        onChange={(newData) => {
-          setData(newData)
-        }}
-        modifier="restrictToParentElement"
-      >
-        {/* {
-          data?.map(item => <div key={item.value}>{item.label}</div>)
-        } */}
-      </DragDrop>
+      <TableExpand>
+        <Table columns={columns} dataSource={data} pagination={false} />
+      </TableExpand>
     </div>
   )
 }
