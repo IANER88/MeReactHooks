@@ -77,7 +77,14 @@ export default function Home() {
   ];
   return (
     <div className="home-box">
-      <TableExpand>
+      <TableExpand bordered={{
+        verticality: {
+          drag: true,
+        },
+        horizontal: {
+          drag: false
+        }
+      }}>
         <Table columns={columns} dataSource={data} pagination={false} />
       </TableExpand>
     </div>

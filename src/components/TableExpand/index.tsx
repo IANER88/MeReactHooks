@@ -1,8 +1,9 @@
 import { useMount } from "ahooks";
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 import './index.less'
 import { DndContext, useDraggable } from "@dnd-kit/core";
 import { restrictToHorizontalAxis, restrictToParentElement, restrictToVerticalAxis } from "@dnd-kit/modifiers";
+import { CSSProperties } from "react";
 type onDrag = {
   /**
    * 拖动开始
@@ -32,7 +33,7 @@ type onDrag = {
 }
 type TableExpandProps = {
   /**
-   * 拖动
+   * 拖动事件回调
    */
   onDrag?: onDrag & {
     /**
@@ -45,10 +46,25 @@ type TableExpandProps = {
     horizontal?: onDrag,
   },
   children: JSX.Element;
+  /**
+   * 是否设置边框和设置拖动
+   * @param {true} 设置为全部
+   * @param {false} 相反就是全不设
+   * 传对象可以单独设置方向
+   */
+  bordered?: boolean | {
+    [verticality: string]: {
+      drag: boolean;
+    };
+    horizontal: {
+      drag: boolean;
+    };
+  };
 }
 type BorderedContextType = {
   direction: 'horizontal' | 'verticality';
-  dataSource: TableElement[]
+  dataSource: TableElement[];
+  on?: onDrag;
 }
 type TableElement = {
   element: HTMLElement;
@@ -57,13 +73,17 @@ type TableElement = {
 type BorderedType = {
   item: TableElement;
   className: string;
-  style: StyleSheet;
+  style: CSSProperties;
 }
-
+type renderType = {
+  [verticality: string]: JSX.Element;
+  horizontal: JSX.Element;
+}
 export default function TableExpand(props: TableExpandProps) {
   const {
     children,
     onDrag,
+    bordered = false,
   } = props
   const [borderedVerticality, setBorderedVerticality] = useState<TableElement[]>([]);
   const [borderedHorizontal, setBorderedHorizontal] = useState<TableElement[]>([]);
@@ -103,10 +123,7 @@ export default function TableExpand(props: TableExpandProps) {
       id: item.offset,
       data: item
     })
-    console.log(item.element.offsetHeight);
-    const direction = transform?.y ? 'offsetHight' : 'offsetWidth'
-    console.log(direction);
-    const style = {
+    const style: CSSProperties = {
       transform: `translate3d(${transform?.x}px, ${transform?.y}px, 0)`,
       position: 'absolute',
       background: '#f0f0f0',
@@ -119,7 +136,7 @@ export default function TableExpand(props: TableExpandProps) {
   const BorderedContext = (props: BorderedContextType) => {
     const { direction: direct, dataSource } = props
     const direction = direct === 'verticality';
-    return (<DndContext onDragEnd={(event) => {
+    const onDragEnd = (event) => {
       const {
         activatorEvent: { target: { style } },
         active: { data: { current: { element } } }
@@ -135,11 +152,14 @@ export default function TableExpand(props: TableExpandProps) {
         element.setAttribute('style', `${direction ? 'height' : 'width'}: ${top - math}px`);
       }
       shuffle();
-    }}
+    }
+    return (
+      <DndContext onDragEnd={onDragEnd}
       modifiers={[direction ? restrictToVerticalAxis : restrictToHorizontalAxis, restrictToParentElement]} >
       {
         dataSource.map((item: TableElement) => {
-          return (<Bordered
+          return (
+            <Bordered
             className={`table-expand-bordered-${direct}`}
             item={item}
             key={item.offset}
@@ -150,21 +170,93 @@ export default function TableExpand(props: TableExpandProps) {
               width: direction ? 'auto' : 1,
               bottom: 0,
               right: 0
-            }} />)
+              }}
+            />
+          )
         })
-      }
-    </DndContext>)
+        }
+      </DndContext>
+    )
   }
+  const BorderedReander = () => {
+    const element: {
+      [key: string]: BorderedContextType;
+    } = {
+      verticality: {
+        dataSource: borderedVerticality,
+        on: onDrag?.verticality,
+        direction: "verticality"
+      },
+      horizontal: {
+        dataSource: borderedHorizontal,
+        on: onDrag?.horizontal,
+        direction: "horizontal"
+      },
+    }
+    const render: renderType = {
+      verticality: (
+        <BorderedContext {...element.verticality} />
+      ),
+      horizontal: (
+        <BorderedContext {...element.horizontal} />
+      )
+    }
+    const OrdinaryRender = (props: BorderedContextType) => {
+      const {
+        direction: direct,
+        dataSource,
+      } = props
+      const direction = direct === "verticality"
+      return (
+        <Fragment>
+          {
+            dataSource.map((item) => {
+              return (
+                <div
+                  className={`table-expand-bordered-no-${direct}`}
+                  key={item.offset}
+                  style={{
+                    position: 'absolute',
+                    background: '#f0f0f0',
+                    left: direction ? 0 : item.offset,
+                    top: direction ? item.offset : 0,
+                    height: direction ? 1 : 'auto',
+                    width: direction ? 'auto' : 1,
+                    bottom: 0,
+                    right: 0
+                  }}
+                />
+              )
+            })
+          }
+        </Fragment>
+      )
+    }
+    /**
+     * 判断是对象且不能为空
+     */
+    if (bordered instanceof Object && Object.keys(bordered).length) {
+      return Object.keys(bordered).map((item) => {
+        return bordered[item].drag === true ? render[item] : <OrdinaryRender {...element[item]} />
+      })
+    }
+    /**
+     * 为了确认值的正确性所以这里 === ture
+     */
+    if (bordered === true) {
+      return Object.keys(render).map((item) => render[item])
+    }
+  }
+
   return (
     <div
-      className="table-expand-box"
+      className={`table-expand-${bordered ? 'bordered' : 'no'}-box`}
       data-table={id}
       style={{
         position: 'relative'
       }}
     > {children}
-      <BorderedContext dataSource={borderedVerticality} direction="verticality" />
-      <BorderedContext dataSource={borderedHorizontal} direction="horizontal" />
+      {BorderedReander()}
     </div>
   )
 }
