@@ -175,7 +175,7 @@ export default function DragDrop(props: DragDropPropsType) {
   const getModifier = useCallback(async () => {
     const module: ModifiersModelType = await import('@dnd-kit/modifiers')
     setModifiers([module[modifier]])
-  }, [modifier])
+  }, [modifier]);
 
   useEffect(() => {
     getModifier()

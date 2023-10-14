@@ -1,92 +1,28 @@
-import DragDrop, { DragDropPropsType } from "../DragDrop/DragDrop";
-import '../../App.css'
-import { useState } from "react";
-import { Table, Space, Tag } from "antd";
-import TableExpand from "../TableExpand";
+import { Form, Select, Input, Button } from "antd"
+import { useDataStore } from "../../assets/hooks";
+import { useRef } from "react"
 export default function Home() {
-  const columns = [
-    {
-      title: 'Name',
-      dataIndex: 'name',
-      key: 'name',
-      render: (text) => <a>{text}</a>,
-    },
-    {
-      title: 'Age',
-      dataIndex: 'age',
-      key: 'age',
-    },
-    {
-      title: 'Address',
-      dataIndex: 'address',
-      key: 'address',
-    },
-    {
-      title: 'Tags',
-      key: 'tags',
-      dataIndex: 'tags',
-      render: (_, { tags }) => (
-        <>
-          {tags.map((tag) => {
-            let color = tag.length > 5 ? 'geekblue' : 'green';
-            if (tag === 'loser') {
-              color = 'volcano';
-            }
-            return (
-              <Tag color={color} key={tag}>
-                {tag.toUpperCase()}
-              </Tag>
-            );
-          })}
-        </>
-      ),
-    },
-    {
-      title: 'Action',
-      key: 'action',
-      render: (_, record) => (
-        <Space size="middle">
-          <a>Invite {record.name}</a>
-          <a>Delete</a>
-        </Space>
-      ),
-    },
-  ];
-  const data = [
-    {
-      key: '1',
-      name: 'John Brown',
-      age: 32,
-      address: 'New York No. 1 Lake Park',
-      tags: ['nice', 'developer'],
-    },
-    {
-      key: '2',
-      name: 'Jim Green',
-      age: 42,
-      address: 'London No. 1 Lake Park',
-      tags: ['loser'],
-    },
-    {
-      key: '3',
-      name: 'Joe Black',
-      age: 32,
-      address: 'Sydney No. 1 Lake Park',
-      tags: ['cool', 'teacher'],
-    },
-  ];
+  const options = Array.from({ length: 7 }).map((item, index) => ({ label: index, value: index }));
+  const [form] = Form.useForm();
+  const onSubmit = useDataStore({
+    form,
+    key: 'data-store-id'
+  });
   return (
-    <div className="home-box">
-      <TableExpand bordered={{
-        verticality: {
-          drag: true,
-        },
-        horizontal: {
-          drag: false
+    <Form form={form}>
+      <Form.Item label="年龄" name="select">
+        <Select options={options} />
+      </Form.Item>
+      <Form.Item label="名字" name="text" rules={[
+        {
+          required: true
         }
-      }}>
-        <Table columns={columns} dataSource={data} pagination={false} />
-      </TableExpand>
-    </div>
+      ]}>
+        <Input type="text" />
+      </Form.Item>
+      <Form.Item>
+        <Button htmlType="submit" onClick={onSubmit}>提交</Button>
+      </Form.Item>
+    </Form>
   )
 }
