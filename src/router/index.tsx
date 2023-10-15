@@ -4,8 +4,22 @@ import About from "../components/about/About"
 
 export default createBrowserRouter([
   {
-    path: '/',
-    element: <Home />
+    path: '/home',
+    element: <Home />,
+    children: [
+      {
+        path: 'main',
+        element: <Home.Main />
+      },
+      {
+        path: 'about',
+        element: <Home.About />
+      },
+      {
+        path: 'store',
+        element: <Home.Store />
+      },
+    ]
   },
   {
     path: '/about',

@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import { FormInstance } from 'antd'
+import { useEffect, useCallback, useMemo, useState } from "react";
+import { FormInstance, message } from 'antd'
 type ParamsType = {
   /**
    * antd 的表单 Form.useForm();
@@ -23,12 +23,26 @@ export default function useDataStore(params: ParamsType) {
     form,
     key,
   } = params;
+  const state = {
+    type: 'create',
+    value: {}
+  };
+  const onChange = (_thisValue: any, allValue: any) => {
+    if (state.type === 'create') state.type = 'update';
+    state.value = allValue;
+  }
+
+  const set = () => {
+    if (state.type === 'update') {
+      const newData = JSON.stringify(state.value);
+      localStorage.setItem(key, newData);
+    }
+  }
   const beforeunload = (event: BeforeUnloadEvent) => {
     event.preventDefault();
-    const newData = JSON.stringify(form.getFieldsValue());
-    localStorage.setItem(key, newData);
-    event.returnValue = false;
-    return false;
+    set();
+    // event.returnValue = false;
+    // return false;
   }
   const onSubmit = () => {
     form.validateFields().then(() => {
@@ -47,9 +61,12 @@ export default function useDataStore(params: ParamsType) {
     }
     window.addEventListener("beforeunload", beforeunload);
     return () => {
-      window.removeEventListener("beforeunload", beforeunload)
+      set();
+      window.removeEventListener("beforeunload", beforeunload);
     }
   }, []);
 
-  return onSubmit;
+  return {
+    onChange
+  }
 }
