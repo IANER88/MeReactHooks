@@ -1,58 +1,50 @@
-import { Form, Select, Input, Button, Segmented } from "antd"
-import { useDataStore } from "../../assets/hooks";
-import { useEffect, useState } from "react"
-import { Outlet, useNavigate } from "react-router-dom";
+import { Button, Form, Input } from 'antd'
+import { useEffect } from 'react';
 export default function Home() {
-  const navigate = useNavigate();
-  return (
-    <>
-      <Segmented options={['main', 'about', 'store']} onChange={(value) => {
-        navigate(`/home/${value}`)
-      }}></Segmented>
-      <Outlet />
-    </>
-  )
-}
+  const VSForm = (props: any) => {
+    const { status } = Form.Item.useStatus();
+    const [form] = Form.useForm();
 
-Home.Main = () => {
-  const options = Array.from({ length: 7 }).map((item, index) => ({ label: index, value: index }));
-  const [form] = Form.useForm();
-  const [state, setState] = useState(false)
-  const { onChange } = useDataStore({
-    form,
-    key: 'data-store-id'
-  });
+    useEffect(() => {
+      if (status === 'error') {
+        form?.validateFields();
+      }
+    }, [status])
+
+    return (
+      <Form form={form} onValuesChange={(...[, value]) => {
+        props?.onChange(value)
+      }}>
+        <Form.Item label="name" name="name" rules={[
+          {
+            required: true
+          }
+        ]}>
+          <Input />
+        </Form.Item>
+      </Form>
+    )
+  }
   return (
-    <>
-      <Button onClick={() => {
-        setState(!state)
-      }}>测试</Button>
-      <span style={{ color: state ? 'rebeccapurple' : 'red' }}>难道</span>
-      <Form form={form} onValuesChange={onChange}>
-      <Form.Item label="年龄" name="select">
-        <Select options={options} />
-      </Form.Item>
-      <Form.Item label="名字" name="text" rules={[
+    <Form onValuesChange={(value, allValue) => {
+      console.log(allValue);
+    }}>
+      <Form.Item label="name" name="name" rules={[
         {
           required: true
         }
       ]}>
-        <Input type="text" />
+        <Input />
       </Form.Item>
-      <Form.Item>
-          <Button htmlType="submit">提交</Button>
+      <Form.Item name="age" rules={[
+        {
+          required: true,
+          message: ''
+        }
+      ]}>
+        <VSForm />
       </Form.Item>
+      <Button htmlType="submit">提交</Button>
     </Form>
-    </>
   )
-}
-
-
-Home.About = () => {
-  return <span>about</span>
-}
-
-
-Home.Store = () => {
-  return <span>store</span>
 }
