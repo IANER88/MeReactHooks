@@ -1,58 +1,95 @@
-import { Form, Select, Input, Button, Segmented } from "antd"
-import { useDataStore } from "../../assets/hooks";
-import { useEffect, useState } from "react"
-import { Outlet, useNavigate } from "react-router-dom";
 export default function Home() {
-  const navigate = useNavigate();
+  type ArrayType = {
+    exportAmount?: number;
+    amount?: number;
+    num?: number
+  }
+  const arr: ArrayType[] = [
+    {
+      exportAmount: 0,
+      amount: 10,
+    },
+    {
+      exportAmount: 0,
+      amount: 2,
+    },
+    {
+      exportAmount: 0,
+      amount: 3,
+    },
+    {
+      exportAmount: 0,
+      amount: 0,
+    },
+    {
+      exportAmount: 0,
+      amount: 10,
+    },
+    {
+      exportAmount: 0,
+      amount: 10,
+    },
+  ]
+
+  // function* nearby(array: unknown[]) {
+  //   for (const i in array) {
+  //     yield [array[i - 1], array[i], array[i + 1]]
+  //   }
+  // }
+
+  // for (const item of arr) {
+  //   const amount = Math?.abs(item?.exportAmount - item?.amount);
+  //   if (item?.exportAmount >= item?.amount) {
+  //     item.exportAmount = item?.amount;
+  //   }
+  // }
+
+  // console.log(arr);
+
+  const count = arr.reduce((previous, current) => previous + current?.amount, 0)
+  const num = 40
+  console.log(count);
+
+  arr?.reduce((previous: ArrayType, current: ArrayType) => {
+    if (previous?.num) {
+      /**
+       * 计算插值
+       */
+      const num = Math.abs(previous?.num - current.amount);
+      /**
+         * 判断差值/出口值是否大于库存量
+         */
+      if ((previous?.num ?? current?.exportAmount) >= current?.amount) {
+        /**
+         * 是就把出口数量修改为最大库存量
+         */
+        current.exportAmount = current.amount;
+        /**
+         * 记录下差值
+         */
+        current.num = num;
+      } else {
+        /**
+         * 如果大于差值直接等于差值
+         */
+        current.exportAmount = previous?.num ?? 0;
+      }
+    }
+    return current;
+  }, {
+    num
+  })
+
+  console.log(arr);
+
+
+  // for (const [previous, current, next] of nearby(arr)) {
+  //   console.log(previous, current, next);
+  // }s
+
   return (
-    <>
-      <Segmented options={['main', 'about', 'store']} onChange={(value) => {
-        navigate(`/home/${value}`)
-      }}></Segmented>
-      <Outlet />
-    </>
+    <div>
+
+    </div>
   )
-}
-
-Home.Main = () => {
-  const options = Array.from({ length: 7 }).map((item, index) => ({ label: index, value: index }));
-  const [form] = Form.useForm();
-  const [state, setState] = useState(false)
-  const { onChange } = useDataStore({
-    form,
-    key: 'data-store-id'
-  });
-  return (
-    <>
-      <Button onClick={() => {
-        setState(!state)
-      }}>测试</Button>
-      <span style={{ color: state ? 'rebeccapurple' : 'red' }}>难道</span>
-      <Form form={form} onValuesChange={onChange}>
-      <Form.Item label="年龄" name="select">
-        <Select options={options} />
-      </Form.Item>
-      <Form.Item label="名字" name="text" rules={[
-        {
-          required: true
-        }
-      ]}>
-        <Input type="text" />
-      </Form.Item>
-      <Form.Item>
-          <Button htmlType="submit">提交</Button>
-      </Form.Item>
-    </Form>
-    </>
-  )
-}
-
-
-Home.About = () => {
-  return <span>about</span>
-}
-
-
-Home.Store = () => {
-  return <span>store</span>
 }
