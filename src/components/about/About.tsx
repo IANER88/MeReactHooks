@@ -1,89 +1,92 @@
-import { DndContext, PointerSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core';
-import type { DragEndEvent } from '@dnd-kit/core/dist/types/index';
-import {
-  SortableContext,
-  arrayMove,
-  horizontalListSortingStrategy,
-  useSortable,
-} from '@dnd-kit/sortable';
-import type { FC } from 'react';
-import React, { useState } from 'react';
-import { Tag } from 'antd';
-
-type Item = {
-  id: number;
-  text: string;
-};
-
-type DraggableTagProps = {
-  tag: Item;
-};
-
-const DraggableTag: FC<DraggableTagProps> = (props) => {
-  const { tag } = props;
-  const { listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: tag.id });
-
-  const commonStyle = {
-    cursor: 'move',
-    transition: 'unset', // Prevent element from shaking after drag
-  };
-
-  const style = transform
-    ? {
-      ...commonStyle,
-      transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-      transition: isDragging ? 'unset' : transition, // Improve performance/visual effect when dragging
+import { Button } from "antd";
+import useSignal from "../../assets/hooks/uesSiangl";
+import { useCallback } from 'react'
+export default function About() {
+  const [state, set, get, rest] = useSignal([
+    {
+      label: 1,
+      value: '一',
     }
-    : commonStyle;
-
-  return (
-    <Tag style={style} ref={setNodeRef} {...listeners}>
-      {tag.text}
-    </Tag>
-  );
-};
-
-const App: React.FC = () => {
-  const [items, setItems] = useState<Item[]>([
-    {
-      id: 1,
-      text: 'Tag 1',
-    },
-    {
-      id: 2,
-      text: 'Tag 2',
-    },
-    {
-      id: 3,
-      text: 'Tag 3',
-    },
   ]);
-
-  const sensors = useSensors(useSensor(PointerSensor));
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (!over) return;
-
-    if (active.id !== over.id) {
-      setItems((data) => {
-        const oldIndex = data.findIndex((item) => item.id === active.id);
-        const newIndex = data.findIndex((item) => item.id === over.id);
-
-        return arrayMove(data, oldIndex, newIndex);
-      });
-    }
-  };
-
+  const method = [
+    {
+      label: 'push',
+      onClick: () => {
+        state?.push({
+          label: 2,
+          value: '二',
+        })
+      }
+    },
+    {
+      label: 'pop',
+      onClick: () => {
+        state?.pop();
+      }
+    },
+    {
+      label: 'unshift',
+      onClick: () => {
+        state?.unshift({
+          label: 2,
+          value: '二',
+        })
+      }
+    },
+    {
+      label: 'shift',
+      onClick: () => {
+        state?.shift();
+      } 
+    },
+    {
+      label: 'splice',
+      onClick: () => {
+        state?.splice(1, 1, {
+          label: 3,
+          value: '三',
+        });
+      } 
+    },
+    {
+      label: 'reverse',
+      onClick: () => {
+        state?.reverse();
+      }
+    },
+    {
+      label: 'sort',
+      onClick: () => {
+        state?.sort();
+      }
+    },
+  ]
+  const [data] = useSignal(undefined);
+  const gets = useCallback(() => {
+    console.log(state, get());
+  }, [])
   return (
-    <DndContext sensors={sensors} onDragEnd={handleDragEnd} collisionDetection={closestCenter}>
-      <SortableContext items={items} strategy={horizontalListSortingStrategy}>
-        {items.map((item) => (
-          <DraggableTag tag={item} key={item.id} />
-        ))}
-      </SortableContext>
-    </DndContext>
-  );
-};
-
-export default App;
+    <div>
+      {
+        method?.map((item) => {
+          return (
+            <Button type="primary" onClick={item?.onClick}>
+              {item?.label}
+            </Button>
+          )
+        })
+      }
+      <span>{state?.map((item) => <span key={item?.label}>{item?.value}</span>)}</span>
+      <Button onClick={() => state?.with(0, {
+        label: 2,
+        value: '二',
+      })}>with</Button>
+      <Button onClick={rest}>rest</Button>
+      <Button onClick={gets}>get</Button>
+      <Button onClick={() => set([...state, {
+        label: 4,
+        value: '四'
+      }])}>set</Button>
+    </div>
+  )
+}
