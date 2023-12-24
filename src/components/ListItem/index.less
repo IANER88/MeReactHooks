@@ -1,0 +1,40 @@
+.list-item-main-box {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+
+  .list-item-option-box {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+
+    .list-item-option-form-box {
+      display: flex;
+      gap: 10px;
+    }
+
+    .lsit-item-option-edit-box {
+      display: flex;
+      gap: 10px;
+
+      @keyframes Edit {
+        to {
+          transform: scale(.8);
+        }
+
+        from {
+          transform: scale(1.2);
+        }
+      }
+
+      >span {
+        cursor: pointer;
+
+        &:active {
+          animation: Edit ease-out .5s;
+        }
+      }
+    }
+  }
+}

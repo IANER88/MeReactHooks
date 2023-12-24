@@ -15,11 +15,19 @@ type UseOnChangeValue<S> = [Method<S>, Dispatch<SetStateAction<S>>];
  */
 export default function useOnChangeValue<S>(
   initialState?: S,
+  onChange?: (value: S) => S,
 ): UseOnChangeValue<S> {
   const [value, setValue] = useState(initialState);
   const method = {
     value,
-    onChange: (value) => setValue(value),
+    onChange: (value: S) => {
+      if (onChange) {
+        const state = onChange?.(value);
+        setValue(state)
+      } else {
+        setValue(value);
+      }
+    },
   };
 
   return [method, setValue] as UseOnChangeValue<S>;
